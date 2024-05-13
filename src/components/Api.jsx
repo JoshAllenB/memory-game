@@ -10,7 +10,7 @@ const MemoryGame = () => {
     <div className="apiImg">
       <h2>Memory Game</h2>
       {!isGameOver && <h3>Score: {score}</h3>}
-      {isGameOver && <h2>HAHAH BOBO! Your score: {score}</h2>}
+      {isGameOver && <h2>Womp womp game over! Your score: {score}</h2>}
       <button onClick={resetGame}>Start New Game</button>
       <div className="imageContainer">
         {displayedCharacters.map((character) => (

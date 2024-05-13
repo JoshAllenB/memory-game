@@ -1,48 +1,20 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import useMemoryGame from "./UseMemoryGame";
 import ImageCard from "./ImageCard";
 import "../styles/ImageCard.css";
-import useMemoryGame from "../components/UseMemoryGame";
 
 const MemoryGame = () => {
-  const [displayedCharacters, setDisplayedCharacters] = useState([]);
-  const { handleCardClick, isGameOver, score, resetGame, cardStatus } =
-    useMemoryGame(displayedCharacters);
-
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        const response = await axios.get("https://narutodb.xyz/api/akatsuki");
-
-        if (response.data.akatsuki) {
-          selectRandomCharacters(response.data.akatsuki);
-        }
-      } catch (error) {
-        console.error("Error fetching characters:", error);
-      }
-    };
-
-    fetchCharacters();
-  }, []);
-
-  const selectRandomCharacters = (characterList) => {
-    const shuffledCharacters = characterList.sort(() => Math.random() - 0.5);
-    const selectedCharacters = shuffledCharacters.slice(0, 2);
-    setDisplayedCharacters(selectedCharacters);
-  };
+  const { displayedCharacters, handleCardClick, isGameOver, score, resetGame } =
+    useMemoryGame();
 
   return (
     <div className="apiImg">
       <h2>Memory Game</h2>
-      {isGameOver && <p>Game Over! Your score: {score}</p>}
+      {!isGameOver && <h3>Score: {score}</h3>}
+      {isGameOver && <h2>HAHAH BOBO! Your score: {score}</h2>}
       <button onClick={resetGame}>Start New Game</button>
       <div className="imageContainer">
         {displayedCharacters.map((character) => (
-          <div
-            key={character.id}
-            onClick={() => handleCardClick(character)}
-            className={cardStatus[character.id]}
-          >
+          <div key={character.id} onClick={() => handleCardClick(character)}>
             <ImageCard imageUrl={character.images[0]} name={character.name} />
           </div>
         ))}

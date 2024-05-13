@@ -1,52 +1,65 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import axios from "axios";
 
-const useMemoryGame = (displayedCharacters) => {
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [isGameOver, setIsGameOver] = useState(false);
+const useMemoryGame = () => {
+  const [displayedCharacters, setDisplayedCharacters] = useState([]);
+  const [clickedCharacters, setClickedCharacters] = useState([]);
   const [score, setScore] = useState(0);
-  const [cardStatus, setCardStatus] = useState({});
+  const [isGameOver, setIsGameOver] = useState(false);
 
-  useEffect(() => {
-    if (selectedCard) {
-      const [firstCharacter, secondCharacter] = displayedCharacters;
-      const areCardsMatched =
-        selectedCard.images[0] === firstCharacter.images[0] ||
-        selectedCard.images[0] === secondCharacter.images[0];
-
-      if (areCardsMatched) {
-        setScore((prevScore) => prevScore + 1);
-        setCardStatus((prevCardStatus) => ({
-          ...prevCardStatus,
-          [selectedCard.id]: "matched",
-          [areCardsMatched ? firstCharacter.id : secondCharacter.id]: "matched",
-        }));
-        setSelectedCard(null);
-      } else {
-        setTimeout(() => {
-          setSelectedCard(null);
-        }, 1000);
+  const fetchNewCharacters = async () => {
+    try {
+      const response = await axios.get("https://narutodb.xyz/api/akatsuki");
+      if (response.data.akatsuki) {
+        const shuffledCharacters = response.data.akatsuki.sort(
+          () => Math.random() - 0.5
+        );
+        const newCharacters = shuffledCharacters.slice(0, 2);
+        setDisplayedCharacters(newCharacters);
       }
-
-      if (displayedCharacters.length === 2 && areCardsMatched) {
-        setIsGameOver(true);
-      }
+    } catch (error) {
+      console.error("Error fetching characters:", error);
     }
-  }, [selectedCard, displayedCharacters]);
+  };
 
   const handleCardClick = (character) => {
-    if (!selectedCard && !cardStatus[character.id]) {
-      setSelectedCard(character);
+    if (!isGameOver) {
+      const isCharacterAlreadyClicked = clickedCharacters.some(
+        (char) => char.id === character.id
+      );
+
+      if (isCharacterAlreadyClicked) {
+        setIsGameOver(true);
+      } else {
+        setClickedCharacters((prevClickedCharacters) => {
+          const updatedCharacters = [...prevClickedCharacters, character];
+          return updatedCharacters;
+        });
+        setScore((prevScore) => {
+          const newScore = prevScore + 1;
+          return newScore;
+        });
+        fetchNewCharacters();
+      }
+    } else {
+      console.log("Game is already over");
     }
   };
 
   const resetGame = () => {
-    setSelectedCard(null);
-    setIsGameOver(false);
+    setClickedCharacters([]);
     setScore(0);
-    setCardStatus({});
+    setIsGameOver(false);
+    fetchNewCharacters();
   };
 
-  return { handleCardClick, isGameOver, score, resetGame, cardStatus };
+  return {
+    displayedCharacters,
+    handleCardClick,
+    isGameOver,
+    score,
+    resetGame,
+  };
 };
 
 export default useMemoryGame;
